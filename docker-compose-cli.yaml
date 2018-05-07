@@ -1,0 +1,197 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+services:
+
+  ca0.org1.example.com:
+    extends:
+      file:   ./docker-compose-base.yaml
+      service: ca0.org1.example.com
+    container_name: ca0.org1.example.com
+
+  ca0.org2.example.com:
+    extends:
+      file:   ./docker-compose-base.yaml
+      service: ca0.org2.example.com
+    container_name: ca0.org2.example.com
+
+  zookeeper0.example.com:
+    container_name: zookeeper0.example.com
+    image: hyperledger/fabric-zookeeper
+    hostname: zookeeper0.example.com
+    environment:
+      - ZOO_SERVERS=server.0=zookeeper0.example.com:2888:3888 server.1=zookeeper1.example.com:2888:3888 server.2=zookeeper2.example.com:2888:3888
+      - ZOO_MY_ID=0
+    #command: /bin/bash -c "sleep 1000000"
+         
+  zookeeper1.example.com:
+    container_name: zookeeper1.example.com
+    image: hyperledger/fabric-zookeeper
+    hostname: zookeeper1.example.com
+    environment:
+      - ZOO_SERVERS=server.0=zookeeper0.example.com:2888:3888 server.1=zookeeper1.example.com:2888:3888 server.2=zookeeper2.example.com:2888:3888
+      - ZOO_MY_ID=1
+    #command: /bin/bash -c "sleep 1000000"
+    
+  zookeeper2.example.com:
+    container_name: zookeeper2.example.com
+    image: hyperledger/fabric-zookeeper
+    hostname: zookeeper2.example.com
+    environment:
+      - ZOO_SERVERS=server.0=zookeeper0.example.com:2888:3888 server.1=zookeeper1.example.com:2888:3888 server.2=zookeeper2.example.com:2888:3888
+      - ZOO_MY_ID=2
+    #command: /bin/bash -c "sleep 1000000"
+    
+  kafka0.example.com:
+    container_name: kafka0.example.com
+    image: hyperledger/fabric-kafka
+    hostname: kafka0.example.com
+    environment:
+      - KAFKA_HOST_NAME=kafka0.example.com    
+      - KAFKA_BROKER_ID=0
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0.example.com:2181,zookeeper1.example.com:2181,zookeeper2.example.com:2181
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=2
+      - KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS=30000
+    #command: /bin/bash
+    #volumes:
+    #   - ./channel-artifacts/kafak/kafak0/:/tmp/kafka-logs/
+    depends_on:
+      - zookeeper0.example.com
+      - zookeeper1.example.com
+      - zookeeper2.example.com
+  
+  kafka1.example.com:
+    container_name: kafka1.example.com
+    image: hyperledger/fabric-kafka
+    hostname: kafka1.example.com
+    environment:
+      - KAFKA_HOST_NAME=kafka1.example.com    
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0.example.com:2181,zookeeper1.example.com:2181,zookeeper2.example.com:2181
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=2
+      - KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS=30000
+    #command: /bin/bash
+    #volumes:
+    #   - ./channel-artifacts/kafak/kafak1/:/tmp/kafka-logs/
+    depends_on:
+      - zookeeper0.example.com
+      - zookeeper1.example.com
+      - zookeeper2.example.com
+  
+  kafka2.example.com:
+    container_name: kafka2.example.com
+    image: hyperledger/fabric-kafka
+    hostname: kafka2.example.com
+    environment:
+      - KAFKA_HOST_NAME=kafka2.example.com    
+      - KAFKA_BROKER_ID=2
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0.example.com:2181,zookeeper1.example.com:2181,zookeeper2.example.com:2181
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=2
+      - KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS=30000
+    #command: /bin/bash
+    #volumes:
+    #   - ./channel-artifacts/kafak/kafak2/:/tmp/kafka-logs/
+    depends_on:
+      - zookeeper0.example.com
+      - zookeeper1.example.com
+      - zookeeper2.example.com
+
+  orderer.example.com:
+    extends:
+      file:   ./docker-compose-base.yaml
+      service: orderer.example.com
+    container_name: orderer.example.com
+    depends_on:
+      - kafka0.example.com
+      - kafka1.example.com
+      - kafka2.example.com
+
+  couchdb0.org1.example.com:
+    extends:
+      file:   ./docker-compose-base.yaml
+      service: couchdb0.org1.example.com
+    container_name: couchdb0.org1.example.com 
+
+  peer0.org1.example.com:
+    container_name: peer0.org1.example.com
+    extends:
+      file:  ./docker-compose-base.yaml
+      service: peer0.org1.example.com
+
+  couchdb1.org1.example.com:
+    extends:
+      file:   ./docker-compose-base.yaml
+      service: couchdb1.org1.example.com
+    container_name: couchdb1.org1.example.com    
+
+  peer1.org1.example.com:
+    container_name: peer1.org1.example.com
+    extends:
+      file:  ./docker-compose-base.yaml
+      service: peer1.org1.example.com
+
+  couchdb0.org2.example.com:
+    extends:
+      file:   ./docker-compose-base.yaml
+      service: couchdb0.org2.example.com
+    container_name: couchdb0.org2.example.com    
+
+  peer0.org2.example.com:
+    container_name: peer0.org2.example.com
+    extends:
+      file:  ./docker-compose-base.yaml
+      service: peer0.org2.example.com
+
+  couchdb1.org2.example.com:
+    extends:
+      file:   ./docker-compose-base.yaml
+      service: couchdb1.org2.example.com
+    container_name: couchdb1.org2.example.com
+
+  peer1.org2.example.com:
+    container_name: peer1.org2.example.com
+    extends:
+      file:  ./docker-compose-base.yaml
+      service: peer1.org2.example.com
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GODEBUG=netdns=go #aliyun
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    #command: /bin/bash -c './scripts/script.sh ${CHANNEL_NAME}; sleep $TIMEOUT'
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.example.com
+      - peer0.org1.example.com
+      - peer1.org1.example.com
+      - peer0.org2.example.com
+      - peer1.org2.example.com
+    #extra_hosts: 
+    #  - "orderer.example.com:10.174.13.185" 
+    #  - "peer0.org1.example.com:10.51.120.220" 
+    #  - "peer1.org1.example.com:10.51.126.19" 
+    #  - "peer0.org2.example.com:10.51.116.133" 
+    #  - "peer1.org2.example.com:10.51.126.5"
