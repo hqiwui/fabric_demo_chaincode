@@ -32,6 +32,16 @@ services:
       - ./crypto-config/peerOrganizations/org2.example.com/ca/:/etc/hyperledger/fabric-ca-server-config 
     ports: 
       - "8054:7054" 
+    
+  kafka:
+    image: hyperledger/fabric-kafka
+    restart: always
+    environment:
+      - KAFKA_MESSAGE_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024 # 99 * 1024 * 1024 B
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+    ports:
+      - '9092'
 
   orderer.example.com:
     container_name: orderer.example.com
@@ -42,21 +52,19 @@ services:
       - GRPC_VERBOSITY=debug
       - ORDERER_GENERAL_LOGLEVEL=debug
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_QUEUESIZE=1000
-      - CONFIGTX_ORDERER_ORDERERTYPE=kafka
-      - ORDERER_KAFKA_RETRY_LONGINTERVAL=10s 
-      - ORDERER_KAFKA_RETRY_LONGTOTAL=100s 
+      #- ORDERER_GENERAL_QUEUESIZE=1000
+      #- CONFIGTX_ORDERER_ORDERERTYPE=kafka
+      #- ORDERER_KAFKA_RETRY_LONGINTERVAL=10s 
+      #- ORDERER_KAFKA_RETRY_LONGTOTAL=100s 
       - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
       - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
       - ORDERER_KAFKA_VERBOSE=true
-      - ORDERER_KAFKA_BROKERS=[kafka0.example.com:9092,kafka1.example.com:9092,kafka2.example.com:9092]
+      #- ORDERER_KAFKA_BROKERS=[kafka0.example.com:9092,kafka1.example.com:9092,kafka2.example.com:9092]
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
       - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
       - ORDERER_GENERAL_LEDGERTYPE=file
-      #- ORDERER_GENERAL_BATCHTIMEOUT=10s
-      #- ORDERER_GENERAL_MAXMESSAGECOUNT=100
       # enabled TLS
       - ORDERER_GENERAL_TLS_ENABLED=true
       - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
@@ -66,7 +74,7 @@ services:
     command: orderer
     volumes:
     - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-    #- ./channel-artifacts/production/:/var/hyperledger/production/
+    #- ./chainData/orderer/:/var/hyperledger/production/
     - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp
     - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/:/var/hyperledger/orderer/tls
     ports:
@@ -93,6 +101,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.org1.example.com:5984
     volumes:
         - /var/run/:/host/var/run/
+        #- ./chainData/peer/peer0org1:/var/hyperledger/production/
         - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
         - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/fabric/tls
     ports:
@@ -122,9 +131,9 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.org1.example.com:5984
     volumes:
         - /var/run/:/host/var/run/
+        #- ./chainData/peer/peer1org1:/var/hyperledger/production/
         - ./crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp:/etc/hyperledger/fabric/msp
         - ./crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls:/etc/hyperledger/fabric/tls
-
     ports:
       - 8051:7051
       - 8052:7052
@@ -151,6 +160,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.org2.example.com:5984
     volumes:
         - /var/run/:/host/var/run/
+        #- ./chainData/peer/peer0org2:/var/hyperledger/production/
         - ./crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
         - ./crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls:/etc/hyperledger/fabric/tls
     ports:
@@ -180,6 +190,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.org2.example.com:5984
     volumes:
         - /var/run/:/host/var/run/
+        #- ./chainData/peer/peer1org2:/var/hyperledger/production/
         - ./crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp:/etc/hyperledger/fabric/msp
         - ./crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls:/etc/hyperledger/fabric/tls
     ports:
